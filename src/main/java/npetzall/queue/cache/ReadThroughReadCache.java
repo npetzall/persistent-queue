@@ -38,7 +38,7 @@ public class ReadThroughReadCache implements Queue<byte[]> {
     }
 
     @Override
-    public void skip(Peeks peeks) {
+    public void skip(Peeks<?> peeks) {
         fileQueue.skip(peeks);
     }
 

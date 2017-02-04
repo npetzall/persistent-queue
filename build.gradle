@@ -14,12 +14,13 @@ apply plugin: 'jacoco'
 apply plugin: 'idea'
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+compileJava.options.compilerArgs << "-Xlint:all"
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 dependencies {
-    testCompile 'org.assertj:assertj-core:2.6.0'
+    testCompile 'org.assertj:assertj-core:3.6.0'
     testCompile "org.spockframework:spock-core:$spockVersion"
     testCompile 'cglib:cglib-nodep:3.2.4'
     testCompile 'org.objenesis:objenesis:2.4'
@@ -42,8 +43,12 @@ jmhReport {
 }
 tasks.jmh.finalizedBy tasks.jmhReport
 
+jacoco {
+    toolVersion = "0.7.8"
+}
+
 jacocoTestReport.dependsOn test
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.2.1'
+    gradleVersion = '3.3'
 }

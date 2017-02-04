@@ -3,6 +3,7 @@ package npetzall.queue.bytebuffer
 import npetzall.queue.api.CapacityMismatchException
 import npetzall.queue.api.NoSpaceLeftRuntimeException
 import npetzall.queue.peek.DataPeeks
+import spock.lang.Shared
 import spock.lang.Specification
 
 import java.nio.ByteBuffer
@@ -11,6 +12,11 @@ import java.nio.charset.StandardCharsets
 import static org.assertj.core.api.Assertions.assertThat
 
 class ByteBufferQueueSpec extends Specification {
+    
+    @Shared byte[] one = "one".getBytes(StandardCharsets.UTF_8);
+    @Shared byte[] two = "two".getBytes(StandardCharsets.UTF_8);
+    @Shared byte[] three = "three".getBytes(StandardCharsets.UTF_8);
+    @Shared byte[] four = "four".getBytes(StandardCharsets.UTF_8);
 
     def "Can create a ByteBufferQueue"() {
         when:
@@ -22,8 +28,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Writing a value moves the writeIndex"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
 
         when:
@@ -43,8 +47,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Reading a value moves the readIndex"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
         byteBufferQueue.enqueue(one)
         byteBufferQueue.enqueue(two)
@@ -66,8 +68,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "can't read beyond the writeIndex"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
         byteBufferQueue.enqueue(one)
 
@@ -89,9 +89,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "When writing and element doesn't fit at end of buffer it's written in the beginning when it fits" () {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(20))
         byteBufferQueue.enqueue(one)
         byteBufferQueue.enqueue(two)
@@ -112,9 +109,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "When reading the element after the last in the end, it reads the next which is in the beginning" () {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(20))
         byteBufferQueue.enqueue(one)
         byteBufferQueue.enqueue(two)
@@ -131,10 +125,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Can't write beyond the readIndex"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
-        byte[] four = "four".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(23))
         byteBufferQueue.enqueue(one)
         byteBufferQueue.enqueue(two)
@@ -150,7 +140,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Peek doesn't remove element"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(23))
         byteBufferQueue.enqueue(one)
 
@@ -176,9 +165,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Peek around the end" () {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(20))
         byteBufferQueue.enqueue(one)
         byteBufferQueue.enqueue(two)
@@ -207,7 +193,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Clear the ByteBufferQueue" () {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(23))
         byteBufferQueue.enqueue(one)
 
@@ -231,9 +216,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Clear the ByteBufferQueue after i has started to recycle space"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(20))
         byteBufferQueue.enqueue(one)
         byteBufferQueue.enqueue(two)
@@ -268,10 +250,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Recycle with recycle marker" () {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
-        byte[] four = "four".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(20))
 
         byteBufferQueue.enqueue(one)
@@ -294,10 +272,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Recycle withour recycle marker" () {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
-        byte[] four = "four".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(23))
 
         byteBufferQueue.enqueue(one)
@@ -320,8 +294,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Skip will advance the reader by 1 element" () {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(23))
         byteBufferQueue.enqueue(one)
         byteBufferQueue.enqueue(two)
@@ -338,10 +310,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Skip works at end of buffer with recycle marker" () {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
-        byte[] four = "four".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(20))
 
         byteBufferQueue.enqueue(one)
@@ -363,10 +331,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Skip works at end of buffer without recycle marker" () {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
-        byte[] four = "four".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(23))
 
         byteBufferQueue.enqueue(one)
@@ -388,10 +352,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "should be able to peek a number of element" () {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
-        byte[] four = "four".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
         byteBufferQueue.enqueue(one);
         byteBufferQueue.enqueue(two);
@@ -411,10 +371,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Should be able to use a Peeks to skip all of them" () {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
-        byte[] four = "four".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
         byteBufferQueue.enqueue(one);
         byteBufferQueue.enqueue(two);
@@ -434,10 +390,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Should be able to use Peeks to skip even when things have been dequeued" () {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
-        byte[] four = "four".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
         byteBufferQueue.enqueue(one);
         byteBufferQueue.enqueue(two);
@@ -460,9 +412,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "Copy byteBufferQueue to another byteBufferQueue"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
         byteBufferQueue.enqueue(one);
         byteBufferQueue.enqueue(two);
@@ -487,9 +436,6 @@ class ByteBufferQueueSpec extends Specification {
 
     def "should throw exception if capacity mismatch"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
-        byte[] three = "three".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
         byteBufferQueue.enqueue(one);
         byteBufferQueue.enqueue(two);

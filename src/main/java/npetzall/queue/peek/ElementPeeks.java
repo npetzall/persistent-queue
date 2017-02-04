@@ -23,6 +23,6 @@ public class ElementPeeks<T> implements Peeks<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return new PeekElementIterator(decoder, byteArrayPeeks.iterator());
+        return new PeekElementIterator<>(decoder, byteArrayPeeks.iterator());
     }
 }

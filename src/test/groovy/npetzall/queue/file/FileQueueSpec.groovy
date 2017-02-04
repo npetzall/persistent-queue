@@ -2,6 +2,7 @@ package npetzall.queue.file
 
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
+import spock.lang.Shared
 import spock.lang.Specification
 
 import java.nio.ByteBuffer
@@ -11,12 +12,13 @@ import static org.assertj.core.api.Assertions.assertThat
 
 class FileQueueSpec extends Specification {
 
+    @Shared byte[] one = "one".getBytes(StandardCharsets.UTF_8);
+
     @Rule
     TemporaryFolder temporaryFolder = new TemporaryFolder()
 
     def "should update writeOffset when element is enqueued"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
         QueueFileHandler queueFileHandler = Mock {
             getDataByteBuffer() >> ByteBuffer.allocate(1024)
             getWriteOffset() >> 0
@@ -35,7 +37,6 @@ class FileQueueSpec extends Specification {
 
     def "should update readOffset when element is dequeued"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
         QueueFileHandler queueFileHandler = Mock {
             getDataByteBuffer() >> ByteBuffer.allocate(1024)
             getWriteOffset() >> 0
@@ -73,7 +74,6 @@ class FileQueueSpec extends Specification {
 
     def "should be able to skip elements"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
         byte[] two = "two".getBytes(StandardCharsets.UTF_8)
         QueueFileHandler queueFileHandler = Mock {
             getDataByteBuffer() >> ByteBuffer.allocate(1024)
@@ -94,8 +94,6 @@ class FileQueueSpec extends Specification {
 
     def "peek doesn't move readOffset"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
-        byte[] two = "two".getBytes(StandardCharsets.UTF_8)
         QueueFileHandler queueFileHandler = Mock {
             getDataByteBuffer() >> ByteBuffer.allocate(1024)
             getWriteOffset() >> 0
@@ -114,7 +112,6 @@ class FileQueueSpec extends Specification {
 
     def "should be able to clear all elements"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
         QueueFileHandler queueFileHandler = Mock {
             getDataByteBuffer() >> ByteBuffer.allocate(1024)
             getWriteOffset() >> 0

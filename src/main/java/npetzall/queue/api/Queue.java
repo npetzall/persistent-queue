@@ -9,7 +9,7 @@ public interface Queue<E> {
     void skip();
 
     Peeks<E> peek(int maxElements);
-    void skip(Peeks peeks);
+    void skip(Peeks<?> peeks);
 
     void clear();
 }

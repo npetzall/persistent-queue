@@ -2,11 +2,14 @@ package npetzall.queue.cache
 
 import npetzall.queue.bytebuffer.ByteBufferQueue
 import npetzall.queue.file.FileQueue
+import spock.lang.Shared
 import spock.lang.Specification
 
 import java.nio.charset.StandardCharsets
 
 class OffHeapReadCacheSpec extends Specification {
+
+    @Shared byte[] one = "one".getBytes(StandardCharsets.UTF_8);
 
     def "Off heap is created with a direct byteBuffer"() {
         FileQueue fileQueue = Mock {
@@ -22,7 +25,6 @@ class OffHeapReadCacheSpec extends Specification {
 
     def "Enqueue calls enqueue on cache and filequeue"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = Mock(ByteBufferQueue)
         FileQueue fileQueue = Mock {
             copyTo(_) >> byteBufferQueue
@@ -39,7 +41,6 @@ class OffHeapReadCacheSpec extends Specification {
 
     def "Dequeue calls dequeue on cache and skip on fileQueue"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = Mock() {
             dequeue() >> one
         }
@@ -59,7 +60,6 @@ class OffHeapReadCacheSpec extends Specification {
 
     def "Peek only touches the cache"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = Mock() {
             peek() >> one
         }
@@ -78,7 +78,6 @@ class OffHeapReadCacheSpec extends Specification {
 
     def "Clear clears filequeue, bytebufferqueue"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
         ByteBufferQueue byteBufferQueue = Mock() {
             peek() >> one
         }

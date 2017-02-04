@@ -1,15 +1,17 @@
 package npetzall.queue.cache
 
 import npetzall.queue.file.FileQueue
+import spock.lang.Shared
 import spock.lang.Specification
 
 import java.nio.charset.StandardCharsets
 
 class ReadThroughReadCacheSpec extends Specification {
 
+    @Shared byte[] one = "one".getBytes(StandardCharsets.UTF_8);
+
     def "should call enqueue on fileQueue when enqueuing"() {
         setup:
-        byte[] one = "one".getBytes(StandardCharsets.UTF_8)
         FileQueue fileQueue = Mock(FileQueue)
         ReadThroughReadCache readThroughReadCache = new ReadThroughReadCache(fileQueue)
 

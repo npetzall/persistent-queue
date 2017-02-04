@@ -125,7 +125,7 @@ public class ByteBufferQueue implements Queue<byte[]> {
     }
 
     @Override
-    public void skip(Peeks peeks) {
+    public void skip(Peeks<?> peeks) {
         Iterator<Peek> peekIterator = peeks.peekIterator();
         while(peekIterator.hasNext()) {
             Peek peek = peekIterator.next();

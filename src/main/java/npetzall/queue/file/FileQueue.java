@@ -54,7 +54,7 @@ public class FileQueue implements Queue<byte[]> {
     }
 
     @Override
-    public void skip(Peeks peeks) {
+    public void skip(Peeks<?> peeks) {
         byteBufferQueue.skip(peeks);
     }
 

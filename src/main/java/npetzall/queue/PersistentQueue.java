@@ -56,7 +56,7 @@ public class PersistentQueue<E> implements Queue<E> {
     }
 
     @Override
-    public void skip(Peeks peeks) {
+    public void skip(Peeks<?> peeks) {
         readCacheQueue.skip(peeks);
     }
 
