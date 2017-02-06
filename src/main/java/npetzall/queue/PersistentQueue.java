@@ -68,4 +68,8 @@ public class PersistentQueue<E> implements Queue<E> {
     public Class<?> getReadCacheClass() {
         return readCacheQueue.getClass();
     }
+
+    public void close() {
+
+    }
 }

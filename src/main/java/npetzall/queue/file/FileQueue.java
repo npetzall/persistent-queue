@@ -68,4 +68,9 @@ public class FileQueue implements Queue<byte[]> {
     public ByteBufferQueue copyTo(ByteBuffer byteBuffer) {
         return byteBufferQueue.copyTo(byteBuffer);
     }
+
+    @Override
+    public void close() {
+        queueFileHandler.close();
+    }
 }

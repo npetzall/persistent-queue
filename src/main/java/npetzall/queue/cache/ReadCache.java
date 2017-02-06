@@ -55,4 +55,9 @@ public abstract class ReadCache implements Queue<byte[]> {
         byteBufferQueue.clear();
         fileQueue.clear();
     }
+
+    @Override
+    public void close() {
+        fileQueue.close();
+    }
 }

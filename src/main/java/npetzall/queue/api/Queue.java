@@ -12,4 +12,6 @@ public interface Queue<E> {
     void skip(Peeks<?> peeks);
 
     void clear();
+
+    void close();
 }

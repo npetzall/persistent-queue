@@ -59,10 +59,14 @@ public class QueueFileHandler {
         return dataBuffer;
     }
 
-    public void close() throws IOException {
+    public void close() {
         headerBuffer.force();
         dataBuffer.force();
-        randomAccessFile.close();
+        try {
+            randomAccessFile.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

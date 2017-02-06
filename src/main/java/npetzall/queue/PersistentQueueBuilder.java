@@ -1,6 +1,5 @@
 package npetzall.queue;
 
-import npetzall.queue.api.Queue;
 import npetzall.queue.api.QueueFactory;
 import npetzall.queue.api.Transcoder;
 import npetzall.queue.cache.OffHeapReadCache;
@@ -12,48 +11,49 @@ import npetzall.queue.helpers.SizeHelper;
 import java.io.File;
 import java.io.IOException;
 
-public class QueueBuilder<E> {
+public class PersistentQueueBuilder<E> {
 
     private File queueFile;
     private int size;
     private Transcoder<E> transcoder;
     private QueueFactory<byte[]> readCacheQueueFactory = null;
 
-    private QueueBuilder(File queueFile) {
+    private PersistentQueueBuilder(File queueFile) {
         this.queueFile = queueFile;
     }
 
-    public static <E> QueueBuilder<E> queueFile(File queueFile) {
-        return new QueueBuilder<>(queueFile);
+    public static <E> PersistentQueueBuilder<E> queueFile(File queueFile) {
+        return new PersistentQueueBuilder<>(queueFile);
     }
 
-    public QueueBuilder<E> size(String size) {
+    public PersistentQueueBuilder<E> size(String size) {
         this.size = SizeHelper.parse(size);
         return this;
     }
 
-    public QueueBuilder<E> transcoder(Transcoder<E> transcoder) {
+    public PersistentQueueBuilder<E> transcoder(Transcoder<E> transcoder) {
         this.transcoder = transcoder;
         return this;
     }
 
-    public QueueBuilder<E> offHeapReadCache() {
+    public PersistentQueueBuilder<E> offHeapReadCache() {
         readCacheQueueFactory = fileQueue -> new OffHeapReadCache(fileQueue);
         return this;
     }
 
-    public QueueBuilder<E> onHeapReadCache() {
+    public PersistentQueueBuilder<E> onHeapReadCache() {
         readCacheQueueFactory = fileQueue -> new OnHeapReadCache(fileQueue);
         return this;
     }
 
-    public Queue<E> build() throws IOException {
+    public PersistentQueue<E> build() throws IOException {
         validate();
         FileQueue fileQueue = new FileQueue(new QueueFileHandler(queueFile, size));
         return new PersistentQueue<>(fileQueue, transcoder, transcoder, readCacheQueueFactory);
     }
 
     private void validate() {
+        //TODO: Add validation before creation
         //Not yet implemented
     }
 

@@ -2,7 +2,6 @@ package npetzall.queue.bytebuffer;
 
 import npetzall.queue.api.*;
 import npetzall.queue.peek.DataPeeks;
-import npetzall.queue.api.Peek;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -201,4 +200,8 @@ public class ByteBufferQueue implements Queue<byte[]> {
         return new ByteBufferQueue(destinationBuffer, writePosition, readPosition);
     }
 
+    @Override
+    public void close() {
+        //no-op;
+    }
 }

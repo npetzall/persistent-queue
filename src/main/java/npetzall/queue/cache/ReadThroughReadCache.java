@@ -47,4 +47,8 @@ public class ReadThroughReadCache implements Queue<byte[]> {
         fileQueue.clear();
     }
 
+    @Override
+    public void close() {
+        fileQueue.close();
+    }
 }

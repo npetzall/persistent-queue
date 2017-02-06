@@ -16,7 +16,7 @@ class QueueBuilderSpec extends Specification {
 
     def "Build a queue with byteBuffer read cache"() {
         when:
-        Queue<String> queue = QueueBuilder
+        Queue<String> queue = PersistentQueueBuilder
                 .queueFile(temporaryFolder.newFile("queueWithOffHeapReadCache"))
                 .size("20m")
                 .transcoder(new StringTranscoder())
@@ -29,7 +29,7 @@ class QueueBuilderSpec extends Specification {
 
     def "Build a queue with heap read cache"() {
         when:
-        Queue<String> queue = QueueBuilder
+        Queue<String> queue = PersistentQueueBuilder
                 .queueFile(temporaryFolder.newFile("queueWithOnHeapReadCache"))
                 .size("20m")
                 .transcoder(new StringTranscoder())
@@ -42,7 +42,7 @@ class QueueBuilderSpec extends Specification {
 
     def "Build a queue without read cache"() {
         when:
-        Queue<String> queue = QueueBuilder
+        Queue<String> queue = PersistentQueueBuilder
                 .queueFile(temporaryFolder.newFile("queueWithReadThroughReadCache"))
                 .size("20m")
                 .transcoder(new StringTranscoder())
