@@ -20,11 +20,12 @@ public class PersistentQueue<E> implements Queue<E> {
     }
 
     @Override
-    public void enqueue(E element) {
+    public boolean enqueue(E element) {
         byte[] elementBytes = encoder.encode(element);
         if (elementBytes.length > 0) {
-            readCacheQueue.enqueue(elementBytes);
+            return readCacheQueue.enqueue(elementBytes);
         }
+        return false;
     }
 
     @Override
@@ -67,6 +68,11 @@ public class PersistentQueue<E> implements Queue<E> {
 
     public Class<?> getReadCacheClass() {
         return readCacheQueue.getClass();
+    }
+
+    @Override
+    public int queueLength() {
+        return readCacheQueue.queueLength();
     }
 
     public void close() {

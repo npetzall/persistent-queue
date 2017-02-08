@@ -13,24 +13,24 @@ import java.util.concurrent.TimeUnit;
 
 
 @Fork(value = 2)
-@Warmup(iterations = 10, batchSize = 10900000)
-@Measurement(iterations = 20, batchSize = 10900000)
-@BenchmarkMode(Mode.SingleShotTime)
+@Warmup(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 20, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 public class ByteBufferReadBenchmark {
 
     @State(Scope.Benchmark)
     public static class Data {
-        public final byte[] data = "This is a long line of text that should be stored as an element in the bytebufferqueue"
+        public byte[] data = "This is a long line of text that should be stored as an element in the bytebufferqueue"
                 .getBytes(StandardCharsets.UTF_8);
     }
 
     @State(Scope.Thread)
     public static class OnHeapByteBuffer {
 
-        public final ByteBuffer byteBuffer = ByteBuffer.allocate(SizeHelper.parse("900m"));
+        public ByteBuffer byteBuffer = ByteBuffer.allocate(SizeHelper.parse("900m"));
 
-        public final byte[] readBuffer;
+        public byte[] readBuffer;
 
         public OnHeapByteBuffer() {
             Data data = new Data();
@@ -49,9 +49,9 @@ public class ByteBufferReadBenchmark {
 
     @State(Scope.Thread)
     public static class OffHeapByteBuffer {
-        public final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(SizeHelper.parse("900m"));
+        public ByteBuffer byteBuffer = ByteBuffer.allocateDirect(SizeHelper.parse("900m"));
 
-        public final byte[] readBuffer;
+        public byte[] readBuffer;
 
         public OffHeapByteBuffer() {
             Data data = new Data();
@@ -70,13 +70,14 @@ public class ByteBufferReadBenchmark {
 
     @State(Scope.Thread)
     public static class MemoryMappedFile {
-        public final ByteBuffer byteBuffer;
+        public ByteBuffer byteBuffer;
 
+        private final TemporaryFolder temporaryFolder = new TemporaryFolder();
         private final RandomAccessFile randomAccessFile;
-        public final byte[] readBuffer;
+
+        public byte[] readBuffer;
 
         public MemoryMappedFile() {
-            TemporaryFolder temporaryFolder = new TemporaryFolder();
             RandomAccessFile tmpRandomAccessFile = null;
             ByteBuffer tmpByteBuffer = null;
             try {
@@ -109,25 +110,23 @@ public class ByteBufferReadBenchmark {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            temporaryFolder.delete();
         }
 
     }
 
     @Benchmark
-    public int onHeap(ByteBufferWriteBenchmark.Data data, OnHeapByteBuffer byteBuffer) {
-        byteBuffer.byteBuffer.get(byteBuffer.readBuffer);
-        return byteBuffer.byteBuffer.position();
+    public ByteBuffer onHeap(OnHeapByteBuffer byteBuffer) {
+        return byteBuffer.byteBuffer.get(byteBuffer.readBuffer);
     }
 
     @Benchmark
-    public int offHeap(ByteBufferWriteBenchmark.Data data, OffHeapByteBuffer byteBuffer) {
-        byteBuffer.byteBuffer.get(byteBuffer.readBuffer);
-        return byteBuffer.byteBuffer.position();
+    public ByteBuffer offHeap(OffHeapByteBuffer byteBuffer) {
+        return byteBuffer.byteBuffer.get(byteBuffer.readBuffer);
     }
 
     @Benchmark
-    public int memoryMappedFile(ByteBufferWriteBenchmark.Data data, MemoryMappedFile byteBuffer) {
-        byteBuffer.byteBuffer.get(byteBuffer.readBuffer);
-        return byteBuffer.byteBuffer.position();
+    public ByteBuffer memoryMappedFile(MemoryMappedFile byteBuffer) {
+        return byteBuffer.byteBuffer.get(byteBuffer.readBuffer);
     }
 }

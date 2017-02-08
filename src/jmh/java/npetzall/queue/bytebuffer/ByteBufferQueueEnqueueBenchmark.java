@@ -12,21 +12,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 @Fork(value = 2)
-@Warmup(iterations = 10, batchSize = 10000000)
-@Measurement(iterations = 20, batchSize = 10000000)
-@BenchmarkMode(Mode.SingleShotTime)
+@Warmup(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 20, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 public class ByteBufferQueueEnqueueBenchmark {
 
     @State(Scope.Benchmark)
     public static class Data {
-        public final byte[] data = "This is a long line of text that should be stored as an element in the bytebufferqueue"
+        public byte[] data = "This is a long line of text that should be stored as an element in the bytebufferqueue"
                 .getBytes(StandardCharsets.UTF_8);
     }
 
     @State(Scope.Thread)
     public static class OnHeapByteBufferQueue {
-        public final ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(SizeHelper.parse("900m")));
+        public ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(SizeHelper.parse("900m")));
 
         @TearDown(Level.Iteration)
         public void tearDownIt() {
@@ -36,7 +36,7 @@ public class ByteBufferQueueEnqueueBenchmark {
 
     @State(Scope.Thread)
     public static class OffHeapByteBufferQueue {
-        public final ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocateDirect(SizeHelper.parse("900m")));
+        public ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocateDirect(SizeHelper.parse("900m")));
 
         @TearDown(Level.Iteration)
         public void tearDownIt() {
@@ -46,12 +46,12 @@ public class ByteBufferQueueEnqueueBenchmark {
 
     @State(Scope.Thread)
     public static class MemoryMappedFile {
-        public final ByteBufferQueue byteBufferQueue;
+        public ByteBufferQueue byteBufferQueue;
 
+        private final TemporaryFolder temporaryFolder = new TemporaryFolder();
         private final RandomAccessFile randomAccessFile;
 
         public MemoryMappedFile() {
-            TemporaryFolder temporaryFolder = new TemporaryFolder();
             RandomAccessFile tmpRandomAccessFile = null;
             ByteBuffer byteBuffer = null;
             try {
@@ -78,26 +78,24 @@ public class ByteBufferQueueEnqueueBenchmark {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            temporaryFolder.delete();
         }
 
     }
 
     @Benchmark
-    public int onHeapByteBufferQueue(Data data, OnHeapByteBufferQueue byteBufferQueue) {
-        byteBufferQueue.byteBufferQueue.enqueue(data.data);
-        return byteBufferQueue.byteBufferQueue.getWriteIndex();
+    public boolean onHeapByteBufferQueue(Data data, OnHeapByteBufferQueue byteBufferQueue) {
+        return byteBufferQueue.byteBufferQueue.enqueue(data.data);
     }
 
     @Benchmark
-    public int offHeapByteBufferQueue(Data data, OffHeapByteBufferQueue byteBufferQueue) {
-        byteBufferQueue.byteBufferQueue.enqueue(data.data);
-        return byteBufferQueue.byteBufferQueue.getWriteIndex();
+    public boolean offHeapByteBufferQueue(Data data, OffHeapByteBufferQueue byteBufferQueue) {
+        return byteBufferQueue.byteBufferQueue.enqueue(data.data);
     }
 
     @Benchmark
-    public int MemoryMappedByteBufferQueue(Data data, MemoryMappedFile byteBufferQueue) {
-        byteBufferQueue.byteBufferQueue.enqueue(data.data);
-        return byteBufferQueue.byteBufferQueue.getWriteIndex();
+    public boolean MemoryMappedByteBufferQueue(Data data, MemoryMappedFile byteBufferQueue) {
+        return byteBufferQueue.byteBufferQueue.enqueue(data.data);
     }
 
 

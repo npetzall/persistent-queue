@@ -3,6 +3,7 @@ package npetzall.queue.bytebuffer;
 import npetzall.queue.helpers.SizeHelper;
 import org.junit.rules.TemporaryFolder;
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -12,11 +13,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 @Fork(value = 2)
-@Warmup(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-@Measurement(iterations = 20, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@Warmup(iterations = 10)
+@Measurement(iterations = 20)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-public class ByteBufferQueueDequeueBenchmark {
+public class ByteBufferQueueEnqueueDequeueBenchmark {
 
     @State(Scope.Benchmark)
     public static class Data {
@@ -28,13 +29,6 @@ public class ByteBufferQueueDequeueBenchmark {
     public static class OnHeapByteBufferQueue {
         public ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(SizeHelper.parse("900m")));
 
-        public OnHeapByteBufferQueue() {
-            Data data = new Data();
-            while (byteBufferQueue.getAvailableSpace() > data.data.length) {
-                byteBufferQueue.enqueue(data.data);
-            }
-        }
-
         @TearDown(Level.Iteration)
         public void tearDownIt() {
             byteBufferQueue.clear();
@@ -44,13 +38,6 @@ public class ByteBufferQueueDequeueBenchmark {
     @State(Scope.Thread)
     public static class OffHeapByteBufferQueue {
         public ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocateDirect(SizeHelper.parse("900m")));
-
-        public OffHeapByteBufferQueue() {
-            Data data = new Data();
-            while (byteBufferQueue.getAvailableSpace() > data.data.length) {
-                byteBufferQueue.enqueue(data.data);
-            }
-        }
 
         @TearDown(Level.Iteration)
         public void tearDownIt() {
@@ -78,17 +65,12 @@ public class ByteBufferQueueDequeueBenchmark {
             }
             randomAccessFile = tmpRandomAccessFile;
             byteBufferQueue = new ByteBufferQueue(byteBuffer);
-            Data data = new Data();
-            while (byteBufferQueue.getAvailableSpace() > data.data.length) {
-                byteBufferQueue.enqueue(data.data);
-            }
         }
 
         @TearDown(Level.Iteration)
         public void tearDownIt() {
             byteBufferQueue.clear();
         }
-
 
         @TearDown(Level.Trial)
         public void tearDownTrial() {
@@ -103,17 +85,20 @@ public class ByteBufferQueueDequeueBenchmark {
     }
 
     @Benchmark
-    public byte[] onHeapByteBufferQueue(OnHeapByteBufferQueue byteBufferQueue) {
-        return byteBufferQueue.byteBufferQueue.dequeue();
+    public void onHeapByteBufferQueue(Data data, OnHeapByteBufferQueue byteBufferQueue, Blackhole blackhole) {
+        blackhole.consume(byteBufferQueue.byteBufferQueue.enqueue(data.data));
+        blackhole.consume(byteBufferQueue.byteBufferQueue.dequeue());
     }
 
     @Benchmark
-    public byte[] offHeapByteBufferQueue(OffHeapByteBufferQueue byteBufferQueue) {
-        return byteBufferQueue.byteBufferQueue.dequeue();
+    public void offHeapByteBufferQueue(Data data, OffHeapByteBufferQueue byteBufferQueue, Blackhole blackhole) {
+        blackhole.consume(byteBufferQueue.byteBufferQueue.enqueue(data.data));
+        blackhole.consume(byteBufferQueue.byteBufferQueue.dequeue());
     }
 
     @Benchmark
-    public byte[] MemoryMappedByteBufferQueue(MemoryMappedFile byteBufferQueue) {
-        return byteBufferQueue.byteBufferQueue.dequeue();
+    public void MemoryMappedByteBufferQueue(Data data, MemoryMappedFile byteBufferQueue, Blackhole blackhole) {
+        blackhole.consume(byteBufferQueue.byteBufferQueue.enqueue(data.data));
+        blackhole.consume(byteBufferQueue.byteBufferQueue.dequeue());
     }
 }

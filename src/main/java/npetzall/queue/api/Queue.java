@@ -2,7 +2,7 @@ package npetzall.queue.api;
 
 public interface Queue<E> {
 
-    void enqueue(E element);
+    boolean enqueue(E element);
     E dequeue();
 
     E peek();
@@ -12,6 +12,8 @@ public interface Queue<E> {
     void skip(Peeks<?> peeks);
 
     void clear();
+
+    int queueLength();
 
     void close();
 }

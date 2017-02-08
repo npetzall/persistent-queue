@@ -17,7 +17,8 @@ public class FileQueue implements Queue<byte[]> {
         byteBufferQueue = new ByteBufferQueue(
                 queueFileHandler.getDataByteBuffer(),
                 queueFileHandler.getWriteOffset(),
-                queueFileHandler.getReadOffset());
+                queueFileHandler.getReadOffset(),
+                queueFileHandler.getQueueLength());
     }
 
     public int getSize() {
@@ -25,15 +26,21 @@ public class FileQueue implements Queue<byte[]> {
     }
 
     @Override
-    public void enqueue(byte[] element) {
-        byteBufferQueue.enqueue(element);
-        queueFileHandler.setWriteOffset(byteBufferQueue.getWriteIndex());
+    public boolean enqueue(byte[] element) {
+        if (byteBufferQueue.enqueue(element)) {
+            queueFileHandler.setWriteOffset(byteBufferQueue.getWriteIndex());
+            queueFileHandler.setQueueLength(byteBufferQueue.queueLength());
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public byte[] dequeue() {
         byte[] element = byteBufferQueue.dequeue();
         queueFileHandler.setReadOffset(byteBufferQueue.getReadIndex());
+        queueFileHandler.setQueueLength(byteBufferQueue.queueLength());
         return element;
     }
 
@@ -46,6 +53,7 @@ public class FileQueue implements Queue<byte[]> {
     public void skip() {
         byteBufferQueue.skip();
         queueFileHandler.setReadOffset(byteBufferQueue.getReadIndex());
+        queueFileHandler.setQueueLength(byteBufferQueue.queueLength());
     }
 
     @Override
@@ -63,10 +71,16 @@ public class FileQueue implements Queue<byte[]> {
         byteBufferQueue.clear();
         queueFileHandler.setWriteOffset(byteBufferQueue.getWriteIndex());
         queueFileHandler.setReadOffset(byteBufferQueue.getReadIndex());
+        queueFileHandler.setQueueLength(byteBufferQueue.queueLength());
     }
 
     public ByteBufferQueue copyTo(ByteBuffer byteBuffer) {
         return byteBufferQueue.copyTo(byteBuffer);
+    }
+
+    @Override
+    public int queueLength() {
+        return byteBufferQueue.queueLength();
     }
 
     @Override

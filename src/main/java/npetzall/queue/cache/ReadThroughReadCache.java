@@ -13,8 +13,8 @@ public class ReadThroughReadCache implements Queue<byte[]> {
     }
 
     @Override
-    public void enqueue(byte[] element) {
-        fileQueue.enqueue(element);
+    public boolean enqueue(byte[] element) {
+        return fileQueue.enqueue(element);
     }
 
     @Override
@@ -45,6 +45,11 @@ public class ReadThroughReadCache implements Queue<byte[]> {
     @Override
     public void clear() {
         fileQueue.clear();
+    }
+
+    @Override
+    public int queueLength() {
+        return fileQueue.queueLength();
     }
 
     @Override

@@ -3,25 +3,26 @@ package npetzall.queue;
 import npetzall.queue.codec.StringTranscoder;
 import org.junit.rules.TemporaryFolder;
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @Fork(value = 2)
-@Warmup(iterations = 3)
-@Measurement(iterations = 10)
+@Warmup(iterations = 10)
+@Measurement(iterations = 20)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-public class PersistentQueueBenchmark {
+public class PersistentQueueEnqueueDequeueBenchmark {
 
     @State(Scope.Benchmark)
     public static class Data {
-        public final String[] strings = new String[]{"one", "two", "three", "four", "five", "six", "seven"};
+        public String data = "This is a long line of text that should be stored as an element in the bytebufferqueue";
     }
 
     @State(Scope.Thread)
     public static class OnHeapCache {
-        TemporaryFolder temporaryFolder = new TemporaryFolder();
+        private final TemporaryFolder temporaryFolder = new TemporaryFolder();
         public PersistentQueue<String> queue;
 
         @Setup(Level.Trial)
@@ -42,12 +43,13 @@ public class PersistentQueueBenchmark {
         @TearDown(Level.Trial)
         public void tearDown() {
             queue.close();
+            temporaryFolder.delete();
         }
     }
 
     @State(Scope.Thread)
     public static class OffHeapCache {
-        TemporaryFolder temporaryFolder = new TemporaryFolder();
+        private final TemporaryFolder temporaryFolder = new TemporaryFolder();
         public PersistentQueue<String> queue;
 
         @Setup(Level.Trial)
@@ -68,12 +70,13 @@ public class PersistentQueueBenchmark {
         @TearDown(Level.Trial)
         public void tearDown() {
             queue.close();
+            temporaryFolder.delete();
         }
     }
 
     @State(Scope.Thread)
     public static class ReadThoughCache {
-        TemporaryFolder temporaryFolder = new TemporaryFolder();
+        private final TemporaryFolder temporaryFolder = new TemporaryFolder();
         public PersistentQueue<String> queue;
 
         @Setup(Level.Trial)
@@ -93,61 +96,25 @@ public class PersistentQueueBenchmark {
         @TearDown(Level.Trial)
         public void tearDown() {
             queue.close();
+            temporaryFolder.delete();
         }
     }
 
-    //@Benchmark
-    public boolean onHeapCache(Data data, OnHeapCache queueHolder) {
-        PersistentQueue<String> queue = queueHolder.queue;
-        int added = 0;
-        for (String str : data.strings) {
-            queue.enqueue(str);
-            added++;
-        }
-        int retrieved = 0;
-        for (int i = 0; i < added; i++) {
-            if (notNullOrEmpty(queue.dequeue())) {
-                retrieved++;
-            }
-        }
-        return retrieved == added;
+    @Benchmark
+    public void onHeapCache(Data data, OnHeapCache queueHolder, Blackhole blackhole) {
+        blackhole.consume(queueHolder.queue.enqueue(data.data));
+        blackhole.consume(queueHolder.queue.dequeue());
     }
 
-    //@Benchmark
-    public boolean offHeapCache(Data data, OffHeapCache queueHolder) {
-        PersistentQueue<String> queue = queueHolder.queue;
-        int added = 0;
-        for (String str : data.strings) {
-            queue.enqueue(str);
-            added++;
-        }
-        int retrieved = 0;
-        for (int i = 0; i < added; i++) {
-            if (notNullOrEmpty(queue.dequeue())) {
-                retrieved++;
-            }
-        }
-        return retrieved == added;
+    @Benchmark
+    public void offHeapCache(Data data, OffHeapCache queueHolder, Blackhole blackhole) {
+        blackhole.consume(queueHolder.queue.enqueue(data.data));
+        blackhole.consume(queueHolder.queue.dequeue());
     }
 
-    //@Benchmark
-    public boolean readThroughCache(Data data, ReadThoughCache queueHolder) {
-        PersistentQueue<String> queue = queueHolder.queue;
-        int added = 0;
-        for (String str : data.strings) {
-            queue.enqueue(str);
-            added++;
-        }
-        int retrieved = 0;
-        for (int i = 0; i < added; i++) {
-            if (notNullOrEmpty(queue.dequeue())) {
-                retrieved++;
-            }
-        }
-        return retrieved == added;
-    }
-
-    private boolean notNullOrEmpty(String string) {
-        return string != null && !string.isEmpty();
+    @Benchmark
+    public void readThroughCache(Data data, ReadThoughCache queueHolder, Blackhole blackhole) {
+        blackhole.consume(queueHolder.queue.enqueue(data.data));
+        blackhole.consume(queueHolder.queue.dequeue());
     }
 }

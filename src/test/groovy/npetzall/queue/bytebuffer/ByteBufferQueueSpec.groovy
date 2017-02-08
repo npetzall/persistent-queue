@@ -1,7 +1,8 @@
 package npetzall.queue.bytebuffer
 
 import npetzall.queue.api.CapacityMismatchException
-import npetzall.queue.api.NoSpaceLeftRuntimeException
+
+import npetzall.queue.api.Peeks
 import npetzall.queue.peek.DataPeeks
 import spock.lang.Shared
 import spock.lang.Specification
@@ -132,10 +133,10 @@ class ByteBufferQueueSpec extends Specification {
         byteBufferQueue.enqueue(three)
 
         when:
-        byteBufferQueue.enqueue(four)
+        boolean enqueued = byteBufferQueue.enqueue(four)
 
         then:
-        thrown(NoSpaceLeftRuntimeException)
+        assertThat(enqueued).isFalse()
     }
 
     def "Peek doesn't remove element"() {
@@ -447,5 +448,99 @@ class ByteBufferQueueSpec extends Specification {
 
         then:
         thrown(CapacityMismatchException)
+    }
+
+    def "QueueLength should be 0 in a newly created ByteBufferQueue"() {
+        when:
+        ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
+
+        then:
+        byteBufferQueue.queueLength() == 0
+    }
+
+    def "Enqueuing 1 element should increase the queueLength"() {
+        setup:
+        ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
+
+        when:
+        byteBufferQueue.enqueue(one)
+
+        then:
+        byteBufferQueue.queueLength() == 1
+    }
+
+    def "Dequeuing after 1 element has been enqueued will decrease the queueLength"() {
+        setup:
+        ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
+        byteBufferQueue.enqueue(one)
+
+        when:
+        byteBufferQueue.dequeue()
+
+        then:
+        byteBufferQueue.queueLength() == 0
+    }
+
+    def "Dequeuing an empty queue will leave the queuelength at 0"() {
+        setup:
+        ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
+
+        when:
+        byteBufferQueue.dequeue()
+
+        then:
+        byteBufferQueue.queueLength() == 0
+    }
+
+    def "peeking doesn't affect queueLength"() {
+        setup:
+        ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
+        byteBufferQueue.enqueue(one)
+
+        when:
+        byteBufferQueue.peek()
+
+        then:
+        byteBufferQueue.queueLength() == 1
+
+    }
+
+    def "Skipping after 1 element has been enqueued will decrease the queueLength"() {
+        setup:
+        ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
+        byteBufferQueue.enqueue(one)
+
+        when:
+        byteBufferQueue.skip()
+
+        then:
+        byteBufferQueue.queueLength() == 0
+    }
+
+    def "Skipping an empty queue will leave the queuelength at 0"() {
+        setup:
+        ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
+
+        when:
+        byteBufferQueue.skip()
+
+        then:
+        byteBufferQueue.queueLength() == 0
+    }
+
+    def "Multi skipping will decrease queueLength"() {
+        setup:
+        ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(1024))
+        byteBufferQueue.enqueue(one)
+        byteBufferQueue.enqueue(two)
+        byteBufferQueue.enqueue(three)
+
+        when:
+        Peeks peeks = byteBufferQueue.peek(2)
+        byteBufferQueue.skip(peeks)
+
+        then:
+        byteBufferQueue.queueLength() == 1
+
     }
 }

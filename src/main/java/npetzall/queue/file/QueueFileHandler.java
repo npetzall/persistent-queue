@@ -11,11 +11,14 @@ public class QueueFileHandler {
 
     public static final int WRITE_OFFSET_POSITION = 0;
     public static final int READ_OFFSET_POSITION = 4;
+    public static final int QUEUE_LENGTH_POSITION = 8;
 
-    public static final int DATA_OFFSET_POSITION = 8;
+    public static final int DATA_OFFSET_POSITION = 12;
 
     protected volatile int writeOffset = 0;
     protected volatile int readOffset = 0;
+
+    protected volatile int queueLength = 0;
 
     protected final MappedByteBuffer headerBuffer;
     protected final MappedByteBuffer dataBuffer;
@@ -30,6 +33,7 @@ public class QueueFileHandler {
         headerBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, DATA_OFFSET_POSITION);
         writeOffset = headerBuffer.getInt(WRITE_OFFSET_POSITION);
         readOffset = headerBuffer.getInt(READ_OFFSET_POSITION);
+        queueLength = headerBuffer.getInt(QUEUE_LENGTH_POSITION);
         dataBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_WRITE, DATA_OFFSET_POSITION, (long)this.size - DATA_OFFSET_POSITION);
     }
 
@@ -53,6 +57,15 @@ public class QueueFileHandler {
     public void setReadOffset(int readOffset) {
         this.readOffset = readOffset;
         headerBuffer.putInt(READ_OFFSET_POSITION, readOffset);
+    }
+
+    public int getQueueLength() {
+        return this.queueLength;
+    }
+
+    public void setQueueLength(int queueLength) {
+        this.queueLength = queueLength;
+        headerBuffer.putInt(QUEUE_LENGTH_POSITION, queueLength);
     }
 
     public ByteBuffer getDataByteBuffer() {

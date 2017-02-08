@@ -37,12 +37,12 @@ public class PersistentQueueBuilder<E> {
     }
 
     public PersistentQueueBuilder<E> offHeapReadCache() {
-        readCacheQueueFactory = fileQueue -> new OffHeapReadCache(fileQueue);
+        readCacheQueueFactory = OffHeapReadCache::new;
         return this;
     }
 
     public PersistentQueueBuilder<E> onHeapReadCache() {
-        readCacheQueueFactory = fileQueue -> new OnHeapReadCache(fileQueue);
+        readCacheQueueFactory = OnHeapReadCache::new;
         return this;
     }
 

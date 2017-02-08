@@ -7,6 +7,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ByteBufferQueue implements Queue<byte[]> {
 
@@ -15,6 +17,8 @@ public class ByteBufferQueue implements Queue<byte[]> {
 
     protected final ByteBuffer readBuffer;
     protected volatile int readPosition;
+
+    protected final AtomicInteger queueLength = new AtomicInteger(0);
 
     protected volatile boolean availableSpaceIsToReader = false;
 
@@ -25,13 +29,14 @@ public class ByteBufferQueue implements Queue<byte[]> {
         readPosition = 0;
     }
 
-    public ByteBufferQueue(ByteBuffer byteBuffer, int writeIndex, int readIndex) {
+    public ByteBufferQueue(ByteBuffer byteBuffer, int writeIndex, int readIndex, int queueLength) {
         writeBuffer = byteBuffer.duplicate();
         readBuffer = byteBuffer.asReadOnlyBuffer();
         writeBuffer.position(writeIndex);
         syncWritePosition();
         readBuffer.position(readIndex);
         syncReadPosition();
+        this.queueLength.set(queueLength);
     }
 
     protected void syncWritePosition() {
@@ -43,7 +48,7 @@ public class ByteBufferQueue implements Queue<byte[]> {
     }
 
     @Override
-    public void enqueue(byte[] element) {
+    public boolean enqueue(byte[] element) {
         if (getAvailableSpace() < getLength(element)) {
             if (moveWriterToBeginningOfBuffer()) {
                 if (getAvailableSpace()>= 4) {
@@ -52,14 +57,16 @@ public class ByteBufferQueue implements Queue<byte[]> {
                 writeBuffer.position(0);
                 syncWritePosition();
                 availableSpaceIsToReader = true;
-                enqueue(element);
+                 return enqueue(element);
             } else {
-                throw new NoSpaceLeftRuntimeException("Out of space");
+                return false;
             }
         } else {
             writeBuffer.putInt(element.length);
             writeBuffer.put(element);
             syncWritePosition();
+            queueLength.incrementAndGet();
+            return true;
         }
     }
 
@@ -94,6 +101,7 @@ public class ByteBufferQueue implements Queue<byte[]> {
                 byte[] element = new byte[length];
                 readBuffer.get(element);
                 syncReadPosition();
+                queueLength.decrementAndGet();
                 return element;
             }
         }
@@ -113,6 +121,7 @@ public class ByteBufferQueue implements Queue<byte[]> {
             if (length > 0) {
                 readBuffer.position(readBuffer.position() + length);
                 syncReadPosition();
+                queueLength.decrementAndGet();
                 return;
             }
         }
@@ -188,6 +197,7 @@ public class ByteBufferQueue implements Queue<byte[]> {
         writeBuffer.position(0);
         syncWritePosition();
         availableSpaceIsToReader = false;
+        queueLength.set(0);
     }
 
     public ByteBufferQueue copyTo(ByteBuffer destinationBuffer) {
@@ -197,7 +207,12 @@ public class ByteBufferQueue implements Queue<byte[]> {
         readBuffer.position(0);
         destinationBuffer.put(readBuffer);
         readBuffer.position(readPosition);
-        return new ByteBufferQueue(destinationBuffer, writePosition, readPosition);
+        return new ByteBufferQueue(destinationBuffer, writePosition, readPosition, queueLength.get());
+    }
+
+    @Override
+    public int queueLength() {
+        return queueLength.get();
     }
 
     @Override

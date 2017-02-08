@@ -16,9 +16,9 @@ public abstract class ReadCache implements Queue<byte[]> {
     }
 
     @Override
-    public void enqueue(byte[] element) {
+    public boolean enqueue(byte[] element) {
         byteBufferQueue.enqueue(element);
-        fileQueue.enqueue(element);
+        return fileQueue.enqueue(element);
     }
 
     @Override
@@ -54,6 +54,11 @@ public abstract class ReadCache implements Queue<byte[]> {
     public void clear() {
         byteBufferQueue.clear();
         fileQueue.clear();
+    }
+
+    @Override
+    public int queueLength() {
+        return fileQueue.queueLength();
     }
 
     @Override
