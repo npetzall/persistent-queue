@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
 @Measurement(iterations = 20, time = 100, timeUnit = TimeUnit.MILLISECONDS)
 @BenchmarkMode({Mode.Throughput, Mode.SampleTime})
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class ByteBufferQueueEnqueueBenchmark {
 
     @State(Scope.Benchmark)
