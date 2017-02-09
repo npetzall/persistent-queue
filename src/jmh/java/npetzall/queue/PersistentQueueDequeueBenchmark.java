@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 @Fork(value = 2)
 @Warmup(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
 @Measurement(iterations = 20, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-@BenchmarkMode(Mode.Throughput)
+@BenchmarkMode({Mode.Throughput, Mode.SampleTime})
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 public class PersistentQueueDequeueBenchmark {
 
