@@ -1,8 +1,6 @@
 package npetzall.queue;
 
 import npetzall.queue.api.*;
-import npetzall.queue.cache.ReadThroughReadCache;
-import npetzall.queue.file.FileQueue;
 import npetzall.queue.peek.ElementPeeks;
 
 import java.io.IOException;
@@ -11,26 +9,26 @@ public class PersistentQueue<E> implements Queue<E> {
 
     private final Encoder<E> encoder;
     private final Decoder<E> decoder;
-    private final Queue<byte[]> readCacheQueue;
+    private final Queue<byte[]> queue;
 
-    public PersistentQueue(FileQueue fileQueue, Encoder<E> encoder, Decoder<E> decoder, QueueFactory<byte[]> readCacheQueue) throws IOException {
+    public PersistentQueue(Queue<byte[]> queue, Encoder<E> encoder, Decoder<E> decoder) throws IOException {
         this.encoder = encoder;
         this.decoder = decoder;
-        this.readCacheQueue = readCacheQueue != null ? readCacheQueue.create(fileQueue) : new ReadThroughReadCache(fileQueue);
+        this.queue = queue;
     }
 
     @Override
     public boolean enqueue(E element) {
         byte[] elementBytes = encoder.encode(element);
         if (elementBytes.length > 0) {
-            return readCacheQueue.enqueue(elementBytes);
+            return queue.enqueue(elementBytes);
         }
         return false;
     }
 
     @Override
     public E dequeue() {
-        byte[] element = readCacheQueue.dequeue();
+        byte[] element = queue.dequeue();
         if (element.length == 0) {
             return null;
         }
@@ -39,7 +37,7 @@ public class PersistentQueue<E> implements Queue<E> {
 
     @Override
     public E peek() {
-        byte[] element = readCacheQueue.peek();
+        byte[] element = queue.peek();
         if (element.length == 0) {
             return null;
         }
@@ -48,34 +46,25 @@ public class PersistentQueue<E> implements Queue<E> {
 
     @Override
     public void skip() {
-        readCacheQueue.skip();
+        queue.skip();
     }
 
     @Override
     public Peeks<E> peek(int maxElements) {
-        return new ElementPeeks<>(decoder, readCacheQueue.peek(maxElements));
+        return new ElementPeeks<>(decoder, queue.peek(maxElements));
     }
 
     @Override
     public void skip(Peeks<?> peeks) {
-        readCacheQueue.skip(peeks);
+        queue.skip(peeks);
     }
 
     @Override
     public void clear() {
-        readCacheQueue.clear();
-    }
-
-    public Class<?> getReadCacheClass() {
-        return readCacheQueue.getClass();
-    }
-
-    @Override
-    public int queueLength() {
-        return readCacheQueue.queueLength();
+        queue.clear();
     }
 
     public void close() {
-
+        queue.close();
     }
 }

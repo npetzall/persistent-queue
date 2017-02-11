@@ -35,7 +35,7 @@ class QueueFileHandlerSpec extends Specification {
         QueueFileHandler queueFileHandler = new QueueFileHandler(queueFile, size)
 
         then:
-        queueFileHandler.getWriteOffset() == 0
+        queueFileHandler.writePosition() == 0
     }
 
     def "Newly created queueFile has readOffset 0"() {
@@ -47,7 +47,7 @@ class QueueFileHandlerSpec extends Specification {
         QueueFileHandler queueFileHandler = new QueueFileHandler(queueFile, size)
 
         then:
-        queueFileHandler.getReadOffset() == 0
+        queueFileHandler.readPosition() == 0
     }
 
     def "QueueFileHandler returns dataByteBuffer"() {
@@ -59,11 +59,11 @@ class QueueFileHandlerSpec extends Specification {
         QueueFileHandler queueFileHandler = new QueueFileHandler(queueFile, size)
 
         and:
-        ByteBuffer dataByteBuffer = queueFileHandler.getDataByteBuffer()
+        ByteBuffer dataByteBuffer = queueFileHandler.byteBuffer()
 
         then:
         dataByteBuffer != null
-        dataByteBuffer.limit() == 1024 - 12
+        dataByteBuffer.limit() == 1024 - 8
     }
 
     def "QueueFileHandler can update writeOffset"() {
@@ -74,10 +74,10 @@ class QueueFileHandlerSpec extends Specification {
         QueueFileHandler queueFileHandler = new QueueFileHandler(queueFile, size)
 
         when:
-        queueFileHandler.setWriteOffset(offset)
+        queueFileHandler.writePosition(offset)
 
         and:
-        int actual = queueFileHandler.getWriteOffset()
+        int actual = queueFileHandler.writePosition()
 
         then:
         actual == offset
@@ -91,10 +91,10 @@ class QueueFileHandlerSpec extends Specification {
         QueueFileHandler queueFileHandler = new QueueFileHandler(queueFile, size)
 
         when:
-        queueFileHandler.setReadOffset(offset)
+        queueFileHandler.readPosition(offset)
 
         and:
-        int actual = queueFileHandler.getReadOffset()
+        int actual = queueFileHandler.readPosition()
 
         then:
         actual == offset
@@ -105,11 +105,11 @@ class QueueFileHandlerSpec extends Specification {
         File queueFile = temporaryFolder.newFile("newQueueFile")
         int size = 1 * 1024
         int offset = 20
-        new QueueFileHandler(queueFile, size).setWriteOffset(offset)
+        new QueueFileHandler(queueFile, size).writePosition(offset)
         QueueFileHandler queueFileHandler = new QueueFileHandler(queueFile, size)
 
         when:
-        int actual = queueFileHandler.getWriteOffset();
+        int actual = queueFileHandler.writePosition();
 
         then:
         actual == offset
@@ -120,27 +120,14 @@ class QueueFileHandlerSpec extends Specification {
         File queueFile = temporaryFolder.newFile("newQueueFile")
         int size = 1 * 1024
         int offset = 20
-        new QueueFileHandler(queueFile, size).setReadOffset(offset)
+        new QueueFileHandler(queueFile, size).readPosition(offset)
         QueueFileHandler queueFileHandler = new QueueFileHandler(queueFile, size)
 
         when:
-        int actual = queueFileHandler.getReadOffset();
+        int actual = queueFileHandler.readPosition();
 
         then:
         actual == offset
-    }
-
-    def "should return size of data area and not file"() {
-        setup:
-        File queueFile = temporaryFolder.newFile("newQueueFile")
-        int size = 1 * 1024
-        QueueFileHandler queueFileHandler = new QueueFileHandler(queueFile, size)
-
-        when:
-        int dataSize = queueFileHandler.getSize()
-
-        then:
-        dataSize == size - QueueFileHandler.DATA_OFFSET_POSITION
     }
 
     def "Create MappedByteBuffer" () {
@@ -150,7 +137,7 @@ class QueueFileHandlerSpec extends Specification {
         QueueFileHandler queueFileHandler = new QueueFileHandler(queueFile, size)
 
         when:
-        ByteBuffer byteBuffer = queueFileHandler.getDataByteBuffer()
+        ByteBuffer byteBuffer = queueFileHandler.byteBuffer()
 
         then:
         assertThat(byteBuffer).isInstanceOf(MappedByteBuffer)

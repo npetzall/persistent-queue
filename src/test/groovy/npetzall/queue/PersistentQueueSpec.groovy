@@ -1,9 +1,8 @@
 package npetzall.queue
 
-import npetzall.queue.api.QueueFactory
-import npetzall.queue.bytebuffer.ByteBufferQueue
+
+import npetzall.queue.bytearray.ByteArrayQueue
 import npetzall.queue.codec.StringTranscoder
-import npetzall.queue.file.FileQueue
 import spock.lang.Specification
 
 import java.nio.charset.StandardCharsets
@@ -16,22 +15,16 @@ class PersistentQueueSpec extends Specification {
         setup:
         String oneStr = "one"
         byte[] oneBytes = oneStr.getBytes(StandardCharsets.UTF_8)
-        FileQueue fileQueue = Mock {
+        ByteArrayQueue fileQueue = Mock {
 
         }
-        ByteBufferQueue byteBufferQueue = Mock {
-
-        }
-        QueueFactory queueFactory = Mock {
-            create(_) >> byteBufferQueue
-        }
-        PersistentQueue<String> persistentQueue = new PersistentQueue<>(fileQueue, new StringTranscoder(), new StringTranscoder(), queueFactory)
+        PersistentQueue<String> persistentQueue = new PersistentQueue<>(fileQueue, new StringTranscoder(), new StringTranscoder())
 
         when:
         persistentQueue.enqueue(oneStr)
 
         then:
-        1 * byteBufferQueue.enqueue(oneBytes)
+        1 * fileQueue.enqueue(oneBytes)
 
     }
 
@@ -39,16 +32,10 @@ class PersistentQueueSpec extends Specification {
         setup:
         String oneStr = "one"
         byte[] oneBytes = oneStr.getBytes(StandardCharsets.UTF_8)
-        FileQueue fileQueue = Mock {
-
-        }
-        ByteBufferQueue byteBufferQueue = Mock {
+        ByteArrayQueue fileQueue = Mock {
             dequeue() >> oneBytes
         }
-        QueueFactory queueFactory = Mock {
-            create(_) >> byteBufferQueue
-        }
-        PersistentQueue<String> persistentQueue = new PersistentQueue<>(fileQueue, new StringTranscoder(), new StringTranscoder(), queueFactory)
+        PersistentQueue<String> persistentQueue = new PersistentQueue<>(fileQueue, new StringTranscoder(), new StringTranscoder())
 
         when:
         String actualOneStr = persistentQueue.dequeue()
@@ -59,16 +46,10 @@ class PersistentQueueSpec extends Specification {
 
     def "should return null when de-queueing returns empty byteArray from underlying queue"() {
         setup:
-        FileQueue fileQueue = Mock {
-
-        }
-        ByteBufferQueue byteBufferQueue = Mock {
+        ByteArrayQueue fileQueue = Mock {
             dequeue() >> new byte[0];
         }
-        QueueFactory queueFactory = Mock {
-            create(_) >> byteBufferQueue
-        }
-        PersistentQueue<String> persistentQueue = new PersistentQueue<>(fileQueue, new StringTranscoder(), new StringTranscoder(), queueFactory)
+        PersistentQueue<String> persistentQueue = new PersistentQueue<>(fileQueue, new StringTranscoder(), new StringTranscoder())
 
         when:
         String actualOneStr = persistentQueue.dequeue()
@@ -81,16 +62,10 @@ class PersistentQueueSpec extends Specification {
         setup:
         String oneStr = "one"
         byte[] oneBytes = oneStr.getBytes(StandardCharsets.UTF_8)
-        FileQueue fileQueue = Mock {
-
-        }
-        ByteBufferQueue byteBufferQueue = Mock {
+        ByteArrayQueue fileQueue = Mock {
             peek() >> oneBytes
         }
-        QueueFactory queueFactory = Mock {
-            create(_) >> byteBufferQueue
-        }
-        PersistentQueue<String> persistentQueue = new PersistentQueue<>(fileQueue, new StringTranscoder(), new StringTranscoder(), queueFactory)
+        PersistentQueue<String> persistentQueue = new PersistentQueue<>(fileQueue, new StringTranscoder(), new StringTranscoder())
 
         when:
         String actualOneStr = persistentQueue.peek()
@@ -101,16 +76,10 @@ class PersistentQueueSpec extends Specification {
 
     def "should return null if underlying returns empty byteArray from underlying queue"() {
         setup:
-        FileQueue fileQueue = Mock {
-
-        }
-        ByteBufferQueue byteBufferQueue = Mock {
+        ByteArrayQueue fileQueue = Mock {
             peek() >> new byte[0];
         }
-        QueueFactory queueFactory = Mock {
-            create(_) >> byteBufferQueue
-        }
-        PersistentQueue<String> persistentQueue = new PersistentQueue<>(fileQueue, new StringTranscoder(), new StringTranscoder(), queueFactory)
+        PersistentQueue<String> persistentQueue = new PersistentQueue<>(fileQueue, new StringTranscoder(), new StringTranscoder())
 
         when:
         String actualOneStr = persistentQueue.peek()
@@ -121,21 +90,15 @@ class PersistentQueueSpec extends Specification {
 
     def "should call clear on readCacheQueue when clear is called"() {
         setup:
-        FileQueue fileQueue = Mock {
+        ByteArrayQueue fileQueue = Mock {
 
         }
-        ByteBufferQueue byteBufferQueue = Mock {
-
-        }
-        QueueFactory queueFactory = Mock {
-            create(_) >> byteBufferQueue
-        }
-        PersistentQueue<String> persistentQueue = new PersistentQueue<>(fileQueue, new StringTranscoder(), new StringTranscoder(), queueFactory)
+        PersistentQueue<String> persistentQueue = new PersistentQueue<>(fileQueue, new StringTranscoder(), new StringTranscoder())
 
         when:
         persistentQueue.clear()
 
         then:
-        1 * byteBufferQueue.clear()
+        1 * fileQueue.clear()
     }
 }

@@ -1,5 +1,8 @@
 package npetzall.queue.file;
 
+import npetzall.queue.api.ByteBufferProvider;
+import npetzall.queue.api.PositionHolder;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -7,71 +10,58 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-public class QueueFileHandler {
+public class QueueFileHandler implements ByteBufferProvider, PositionHolder {
 
-    public static final int WRITE_OFFSET_POSITION = 0;
-    public static final int READ_OFFSET_POSITION = 4;
-    public static final int QUEUE_LENGTH_POSITION = 8;
+    public static final int WRITE_POSITION_INDEX = 0;
+    public static final int READ_POSITION_INDEX = 4;
 
-    public static final int DATA_OFFSET_POSITION = 12;
+    public static final int DATA_OFFSET = 8;
 
-    protected volatile int writeOffset = 0;
-    protected volatile int readOffset = 0;
-
-    protected volatile int queueLength = 0;
+    protected volatile int writePosition = 0;
+    protected volatile int readPosition = 0;
 
     protected final MappedByteBuffer headerBuffer;
     protected final MappedByteBuffer dataBuffer;
 
-    protected final int size;
     protected RandomAccessFile randomAccessFile;
 
     public QueueFileHandler(File queueFile, int size) throws IOException {
-        this.size = size;
         randomAccessFile = new RandomAccessFile(queueFile, "rw");
-        randomAccessFile.setLength(this.size);
-        headerBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, DATA_OFFSET_POSITION);
-        writeOffset = headerBuffer.getInt(WRITE_OFFSET_POSITION);
-        readOffset = headerBuffer.getInt(READ_OFFSET_POSITION);
-        queueLength = headerBuffer.getInt(QUEUE_LENGTH_POSITION);
-        dataBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_WRITE, DATA_OFFSET_POSITION, (long)this.size - DATA_OFFSET_POSITION);
+        randomAccessFile.setLength(size);
+        headerBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, DATA_OFFSET);
+        writePosition = headerBuffer.getInt(WRITE_POSITION_INDEX);
+        readPosition = headerBuffer.getInt(READ_POSITION_INDEX);
+        dataBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_WRITE, DATA_OFFSET, (long)size - DATA_OFFSET);
     }
 
-    public int getSize() {
-        return size - DATA_OFFSET_POSITION;
+    @Override
+    public int writePosition() {
+        return writePosition;
     }
 
-    public int getWriteOffset() {
-        return writeOffset;
+    @Override
+    public void writePosition(int writePosition) {
+        this.writePosition = writePosition;
+        headerBuffer.putInt(WRITE_POSITION_INDEX, writePosition);
     }
 
-    public void setWriteOffset(int writeOffset) {
-        this.writeOffset = writeOffset;
-        headerBuffer.putInt(WRITE_OFFSET_POSITION, writeOffset);
+    @Override
+    public int readPosition() {
+        return readPosition;
     }
 
-    public int getReadOffset() {
-        return readOffset;
+    @Override
+    public void readPosition(int readPosition) {
+        this.readPosition = readPosition;
+        headerBuffer.putInt(READ_POSITION_INDEX, readPosition);
     }
 
-    public void setReadOffset(int readOffset) {
-        this.readOffset = readOffset;
-        headerBuffer.putInt(READ_OFFSET_POSITION, readOffset);
-    }
-
-    public int getQueueLength() {
-        return this.queueLength;
-    }
-
-    public void setQueueLength(int queueLength) {
-        this.queueLength = queueLength;
-        headerBuffer.putInt(QUEUE_LENGTH_POSITION, queueLength);
-    }
-
-    public ByteBuffer getDataByteBuffer() {
+    @Override
+    public ByteBuffer byteBuffer() {
         return dataBuffer;
     }
 
+    @Override
     public void close() {
         headerBuffer.force();
         dataBuffer.force();

@@ -1,4 +1,4 @@
-package npetzall.queue.bytebuffer;
+package npetzall.queue.bytearray;
 
 import npetzall.queue.api.*;
 import npetzall.queue.peek.DataPeeks;
@@ -7,44 +7,31 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
-public class ByteBufferQueue implements Queue<byte[]> {
+public class ByteArrayQueue implements Queue<byte[]> {
+
+    protected final ByteBufferProvider byteBufferProvider;
+    protected final PositionHolder positionHolder;
 
     protected final ByteBuffer writeBuffer;
-    protected volatile int writePosition;
 
     protected final ByteBuffer readBuffer;
-    protected volatile int readPosition;
-
-    protected final AtomicInteger queueLength = new AtomicInteger(0);
 
     protected volatile boolean availableSpaceIsToReader = false;
 
-    public ByteBufferQueue(ByteBuffer byteBuffer) {
-        writeBuffer = byteBuffer.duplicate();
-        readBuffer = byteBuffer.asReadOnlyBuffer();
-        writePosition = 0;
-        readPosition = 0;
-    }
-
-    public ByteBufferQueue(ByteBuffer byteBuffer, int writeIndex, int readIndex, int queueLength) {
-        writeBuffer = byteBuffer.duplicate();
-        readBuffer = byteBuffer.asReadOnlyBuffer();
-        writeBuffer.position(writeIndex);
-        syncWritePosition();
-        readBuffer.position(readIndex);
-        syncReadPosition();
-        this.queueLength.set(queueLength);
+    public ByteArrayQueue(ByteBufferProvider byteBufferProvider, PositionHolder positionHolder) {
+        this.byteBufferProvider = byteBufferProvider;
+        this.positionHolder = positionHolder;
+        writeBuffer = byteBufferProvider.byteBuffer().duplicate();
+        readBuffer = byteBufferProvider.byteBuffer().asReadOnlyBuffer();
     }
 
     protected void syncWritePosition() {
-        writePosition = writeBuffer.position();
+        positionHolder.writePosition(writeBuffer.position());
     }
 
     protected void syncReadPosition() {
-        readPosition = readBuffer.position();
+        positionHolder.readPosition(readBuffer.position());
     }
 
     @Override
@@ -65,14 +52,13 @@ public class ByteBufferQueue implements Queue<byte[]> {
             writeBuffer.putInt(element.length);
             writeBuffer.put(element);
             syncWritePosition();
-            queueLength.incrementAndGet();
             return true;
         }
     }
 
     protected int getAvailableSpace() {
         if (availableSpaceIsToReader) {
-            return readPosition - writePosition;
+            return positionHolder.readPosition() - positionHolder.writePosition();
         } else {
             return writeBuffer.remaining();
         }
@@ -86,13 +72,9 @@ public class ByteBufferQueue implements Queue<byte[]> {
         return !availableSpaceIsToReader;
     }
 
-    public int getWriteIndex() {
-        return writePosition;
-    }
-
     @Override
     public byte[] dequeue() {
-        if (readPosition == writePosition) {
+        if (positionHolder.readPosition() == positionHolder.writePosition()) {
             return new byte[0];
         }
         if (readBuffer.remaining() >= 4) {
@@ -101,7 +83,6 @@ public class ByteBufferQueue implements Queue<byte[]> {
                 byte[] element = new byte[length];
                 readBuffer.get(element);
                 syncReadPosition();
-                queueLength.decrementAndGet();
                 return element;
             }
         }
@@ -113,7 +94,7 @@ public class ByteBufferQueue implements Queue<byte[]> {
 
     @Override
     public void skip() {
-        if(readPosition == writePosition){
+        if(positionHolder.readPosition() == positionHolder.writePosition()){
             return;
         }
         if(readBuffer.remaining() >= 4) {
@@ -121,7 +102,6 @@ public class ByteBufferQueue implements Queue<byte[]> {
             if (length > 0) {
                 readBuffer.position(readBuffer.position() + length);
                 syncReadPosition();
-                queueLength.decrementAndGet();
                 return;
             }
         }
@@ -129,7 +109,6 @@ public class ByteBufferQueue implements Queue<byte[]> {
         syncReadPosition();
         availableSpaceIsToReader = false;
         skip();
-
     }
 
     @Override
@@ -137,19 +116,15 @@ public class ByteBufferQueue implements Queue<byte[]> {
         Iterator<Peek> peekIterator = peeks.peekIterator();
         while(peekIterator.hasNext()) {
             Peek peek = peekIterator.next();
-            if(peek.getPosition() == readPosition) {
+            if(peek.getPosition() == positionHolder.readPosition()) {
                 skip();
             }
         }
     }
 
-    public int getReadIndex() {
-        return readPosition;
-    }
-
     @Override
     public byte[] peek() {
-        if (readPosition == writePosition) {
+        if (positionHolder.readPosition() == positionHolder.writePosition()) {
             return new byte[0];
         }
         int position = readBuffer.position();
@@ -174,7 +149,7 @@ public class ByteBufferQueue implements Queue<byte[]> {
     }
 
     protected Peek peekElement() {
-        if (readBuffer.position() == writePosition) {
+        if (readBuffer.position() == positionHolder.writePosition()) {
             return null;
         }
         if (readBuffer.remaining() >= 4) {
@@ -197,26 +172,10 @@ public class ByteBufferQueue implements Queue<byte[]> {
         writeBuffer.position(0);
         syncWritePosition();
         availableSpaceIsToReader = false;
-        queueLength.set(0);
-    }
-
-    public ByteBufferQueue copyTo(ByteBuffer destinationBuffer) {
-        if (destinationBuffer.capacity() != readBuffer.capacity()) {
-            throw new CapacityMismatchException("Capacity mismatch src is '" + readBuffer.capacity() + "' and dst is '"+ destinationBuffer.capacity() + "'");
-        }
-        readBuffer.position(0);
-        destinationBuffer.put(readBuffer);
-        readBuffer.position(readPosition);
-        return new ByteBufferQueue(destinationBuffer, writePosition, readPosition, queueLength.get());
-    }
-
-    @Override
-    public int queueLength() {
-        return queueLength.get();
     }
 
     @Override
     public void close() {
-        //no-op;
+        byteBufferProvider.close();
     }
 }

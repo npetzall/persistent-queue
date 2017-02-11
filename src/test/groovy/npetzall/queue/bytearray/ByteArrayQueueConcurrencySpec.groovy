@@ -1,6 +1,10 @@
-package npetzall.queue.bytebuffer
+package npetzall.queue.bytearray
 
-import org.assertj.core.extractor.Extractors
+import npetzall.queue.bytearray.ByteArrayQueue
+import npetzall.queue.doubles.ByteBufferProviderDouble
+import npetzall.queue.doubles.PositionHolderDouble
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 import spock.lang.Timeout
 
@@ -8,17 +12,19 @@ import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
 import static org.assertj.core.api.Assertions.assertThat
-import static org.assertj.core.api.Assertions.assertThatThrownBy
 
-class ByteBufferQueueConcurrencySpec extends Specification {
+class ByteArrayQueueConcurrencySpec extends Specification {
 
+    @Rule TemporaryFolder temporaryFolder = new TemporaryFolder()
 
     @Timeout(5)
     def "Concurrent writes and reads"() {
         setup:
         List<String> toWrite = ["one", "two", "three", "four", "five", "six"]
         ArrayList<String> beenRead = [];
-        ByteBufferQueue byteBufferQueue = new ByteBufferQueue(ByteBuffer.allocate(2048))
+        ByteBufferProviderDouble byteBufferProviderDouble = new ByteBufferProviderDouble(ByteBuffer.allocate(2040))
+        PositionHolderDouble positionHolderDouble = new PositionHolderDouble()
+        ByteArrayQueue byteBufferQueue = new ByteArrayQueue(byteBufferProviderDouble, positionHolderDouble)
 
         when:
         Thread.start {

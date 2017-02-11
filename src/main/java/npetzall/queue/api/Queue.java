@@ -13,7 +13,5 @@ public interface Queue<E> {
 
     void clear();
 
-    int queueLength();
-
     void close();
 }
