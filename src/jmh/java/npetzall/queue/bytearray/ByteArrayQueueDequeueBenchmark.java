@@ -27,7 +27,10 @@ public class ByteArrayQueueDequeueBenchmark {
 
     @State(Scope.Thread)
     public static class OnHeapQueue {
-        public ByteArrayQueue queue = new ByteArrayQueue(new ByteBufferProviderDouble(ByteBuffer.allocate(SizeHelper.parse("900m"))), new PositionHolderDouble());
+
+        private PositionHolderDouble positionHolderDouble = new PositionHolderDouble();
+
+        public ByteArrayQueue queue = new ByteArrayQueue(new ByteBufferProviderDouble(ByteBuffer.allocate(SizeHelper.parse("900m"))), positionHolderDouble);
 
         public OnHeapQueue() {
             Data data = new Data();
@@ -38,13 +41,16 @@ public class ByteArrayQueueDequeueBenchmark {
 
         @TearDown(Level.Iteration)
         public void tearDownIt() {
-            queue.clear();
+            positionHolderDouble.readPosition(0);
         }
     }
 
     @State(Scope.Thread)
     public static class OffHeapQueue {
-        public ByteArrayQueue queue = new ByteArrayQueue(new ByteBufferProviderDouble(ByteBuffer.allocateDirect(SizeHelper.parse("900m"))), new PositionHolderDouble());
+
+        private PositionHolderDouble positionHolderDouble = new PositionHolderDouble();
+
+        public ByteArrayQueue queue = new ByteArrayQueue(new ByteBufferProviderDouble(ByteBuffer.allocateDirect(SizeHelper.parse("900m"))), positionHolderDouble);
 
         public OffHeapQueue() {
             Data data = new Data();
@@ -55,7 +61,7 @@ public class ByteArrayQueueDequeueBenchmark {
 
         @TearDown(Level.Iteration)
         public void tearDownIt() {
-            queue.clear();
+            positionHolderDouble.readPosition(0);
         }
     }
 
@@ -65,10 +71,12 @@ public class ByteArrayQueueDequeueBenchmark {
 
         private final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+        private QueueFileHandler queueFileHandler;
+
         public MemoryMappedQueue() {
             try {
                 temporaryFolder.create();
-                QueueFileHandler queueFileHandler = new QueueFileHandler(temporaryFolder.newFile(), SizeHelper.parse("900m"));
+                queueFileHandler = new QueueFileHandler(temporaryFolder.newFile(), SizeHelper.parse("900m"));
                 queue = new ByteArrayQueue(queueFileHandler,queueFileHandler);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -77,11 +85,12 @@ public class ByteArrayQueueDequeueBenchmark {
             while (queue.getAvailableSpace() > data.data.length) {
                 queue.enqueue(data.data);
             }
+
         }
 
         @TearDown(Level.Iteration)
         public void tearDownIt() {
-            queue.clear();
+            queueFileHandler.readPosition(0);
         }
 
 
@@ -95,16 +104,28 @@ public class ByteArrayQueueDequeueBenchmark {
 
     @Benchmark
     public byte[] onHeapQueue(OnHeapQueue queue) {
+        byte[] data = queue.queue.dequeue();
+        if (data.length == 0) {
+            throw new RuntimeException("Wrong");
+        }
         return queue.queue.dequeue();
     }
 
     @Benchmark
     public byte[] offHeapQueue(OffHeapQueue queue) {
+        byte[] data = queue.queue.dequeue();
+        if (data.length == 0) {
+            throw new RuntimeException("Wrong");
+        }
         return queue.queue.dequeue();
     }
 
     @Benchmark
     public byte[] MemoryMappedQueue(MemoryMappedQueue queue) {
+        byte[] data = queue.queue.dequeue();
+        if (data.length == 0) {
+            throw new RuntimeException("Wrong");
+        }
         return queue.queue.dequeue();
     }
 }

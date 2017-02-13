@@ -35,15 +35,15 @@ public class ByteBufferReadBenchmark {
         public OnHeapByteBuffer() {
             Data data = new Data();
             readBuffer = new byte[data.data.length];
-            while (byteBuffer.remaining() > data.data.length) {
-                byteBuffer.put(data.data);
+            while (byteBuffer.remaining() > data.data.length + 4) {
+                byteBuffer.putInt(data.data.length).put(data.data);
             }
             byteBuffer.position(0);
         }
 
         @TearDown(Level.Iteration)
         public void tearDownIt() {
-            byteBuffer.clear();
+            byteBuffer.position(0);
         }
     }
 
@@ -56,15 +56,15 @@ public class ByteBufferReadBenchmark {
         public OffHeapByteBuffer() {
             Data data = new Data();
             readBuffer = new byte[data.data.length];
-            while (byteBuffer.remaining() > data.data.length) {
-                byteBuffer.put(data.data);
+            while (byteBuffer.remaining() > data.data.length + 4) {
+                byteBuffer.putInt(data.data.length).put(data.data);
             }
             byteBuffer.position(0);
         }
 
         @TearDown(Level.Iteration)
         public void tearDownIt() {
-            byteBuffer.clear();
+            byteBuffer.position(0);
         }
     }
 
@@ -92,8 +92,8 @@ public class ByteBufferReadBenchmark {
             byteBuffer = tmpByteBuffer;
             Data data = new Data();
             readBuffer = new byte[data.data.length];
-            while (byteBuffer.remaining() > data.data.length) {
-                byteBuffer.put(data.data);
+            while (byteBuffer.remaining() > data.data.length + 4) {
+                byteBuffer.putInt(data.data.length).put(data.data);
             }
             byteBuffer.position(0);
         }
@@ -116,17 +116,26 @@ public class ByteBufferReadBenchmark {
     }
 
     @Benchmark
-    public ByteBuffer onHeap(OnHeapByteBuffer byteBuffer) {
-        return byteBuffer.byteBuffer.get(byteBuffer.readBuffer);
+    public byte[] onHeap(OnHeapByteBuffer byteBuffer) {
+        int length = byteBuffer.byteBuffer.getInt();
+        byte[] data = new byte[length];
+        byteBuffer.byteBuffer.get(data);
+        return data;
     }
 
     @Benchmark
-    public ByteBuffer offHeap(OffHeapByteBuffer byteBuffer) {
-        return byteBuffer.byteBuffer.get(byteBuffer.readBuffer);
+    public byte[] offHeap(OffHeapByteBuffer byteBuffer) {
+        int length = byteBuffer.byteBuffer.getInt();
+        byte[] data = new byte[length];
+        byteBuffer.byteBuffer.get(data);
+        return data;
     }
 
     @Benchmark
-    public ByteBuffer memoryMappedFile(MemoryMappedFile byteBuffer) {
-        return byteBuffer.byteBuffer.get(byteBuffer.readBuffer);
+    public byte[] memoryMappedFile(MemoryMappedFile byteBuffer) {
+        int length = byteBuffer.byteBuffer.getInt();
+        byte[] data = new byte[length];
+        byteBuffer.byteBuffer.get(data);
+        return data;
     }
 }

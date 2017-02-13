@@ -85,16 +85,16 @@ public class ByteBufferWriteBenchmark {
 
     @Benchmark
     public ByteBuffer onHeap(Data data, OnHeapByteBuffer byteBuffer) {
-        return byteBuffer.byteBuffer.put(data.data);
+        return byteBuffer.byteBuffer.putInt(data.data.length).put(data.data);
     }
 
     @Benchmark
     public ByteBuffer offHeap(Data data, OffHeapByteBuffer byteBuffer) {
-        return byteBuffer.byteBuffer.put(data.data);
+        return byteBuffer.byteBuffer.putInt(data.data.length).put(data.data);
     }
 
     @Benchmark
     public ByteBuffer memoryMappedFile(Data data, MemoryMappedFile byteBuffer) {
-        return byteBuffer.byteBuffer.put(data.data);
+        return byteBuffer.byteBuffer.putInt(data.data.length).put(data.data);
     }
 }

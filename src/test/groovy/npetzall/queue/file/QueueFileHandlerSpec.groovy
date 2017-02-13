@@ -63,7 +63,7 @@ class QueueFileHandlerSpec extends Specification {
 
         then:
         dataByteBuffer != null
-        dataByteBuffer.limit() == 1024 - 8
+        dataByteBuffer.limit() == 1024 - 9
     }
 
     def "QueueFileHandler can update writeOffset"() {

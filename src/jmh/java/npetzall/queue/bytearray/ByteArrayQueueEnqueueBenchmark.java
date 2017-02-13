@@ -76,17 +76,29 @@ public class ByteArrayQueueEnqueueBenchmark {
 
     @Benchmark
     public boolean onHeapQueue(Data data, OnHeapQueue queue) {
-        return queue.queue.enqueue(data.data);
+        boolean enqueued = queue.queue.enqueue(data.data);
+        if (!enqueued) {
+            throw new RuntimeException("Wrong");
+        }
+        return enqueued;
     }
 
     @Benchmark
     public boolean offHeapQueue(Data data, OffHeapQueue queue) {
-        return queue.queue.enqueue(data.data);
+        boolean enqueued = queue.queue.enqueue(data.data);
+        if (!enqueued) {
+            throw new RuntimeException("Wrong");
+        }
+        return enqueued;
     }
 
     @Benchmark
     public boolean MemoryMappedQueue(Data data, MemoryMappedQueue queue) {
-        return queue.queue.enqueue(data.data);
+        boolean enqueued = queue.queue.enqueue(data.data);
+        if (!enqueued) {
+            throw new RuntimeException("Wrong");
+        }
+        return enqueued;
     }
 
 

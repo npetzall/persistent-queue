@@ -1,8 +1,5 @@
 package npetzall.queue.api;
 
-/**
- * Created by Nosse on 2017-02-11.
- */
 public interface PositionHolder {
     int writePosition();
 
@@ -11,4 +8,8 @@ public interface PositionHolder {
     int readPosition();
 
     void readPosition(int readPosition);
+
+    boolean writerOneCycleAhead();
+
+    void writerOneCycleAhead(boolean isAhead);
 }

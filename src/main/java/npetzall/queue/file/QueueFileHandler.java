@@ -14,11 +14,16 @@ public class QueueFileHandler implements ByteBufferProvider, PositionHolder {
 
     public static final int WRITE_POSITION_INDEX = 0;
     public static final int READ_POSITION_INDEX = 4;
+    public static final int WRITER_ONE_CYCLE_AHEAD_INDEX = 8;
+    private static final byte BYTE_FALSE = 0;
+    private static final byte BYTE_TRUE = 1;
 
-    public static final int DATA_OFFSET = 8;
+    public static final int DATA_OFFSET = 9;
 
     protected volatile int writePosition = 0;
     protected volatile int readPosition = 0;
+
+    protected volatile boolean writerOneCycleAhead = false;
 
     protected final MappedByteBuffer headerBuffer;
     protected final MappedByteBuffer dataBuffer;
@@ -31,6 +36,7 @@ public class QueueFileHandler implements ByteBufferProvider, PositionHolder {
         headerBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, DATA_OFFSET);
         writePosition = headerBuffer.getInt(WRITE_POSITION_INDEX);
         readPosition = headerBuffer.getInt(READ_POSITION_INDEX);
+        writerOneCycleAhead = headerBuffer.get(WRITER_ONE_CYCLE_AHEAD_INDEX) == BYTE_TRUE;
         dataBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_WRITE, DATA_OFFSET, (long)size - DATA_OFFSET);
     }
 
@@ -54,6 +60,17 @@ public class QueueFileHandler implements ByteBufferProvider, PositionHolder {
     public void readPosition(int readPosition) {
         this.readPosition = readPosition;
         headerBuffer.putInt(READ_POSITION_INDEX, readPosition);
+    }
+
+    @Override
+    public boolean writerOneCycleAhead() {
+        return writerOneCycleAhead;
+    }
+
+    @Override
+    public void writerOneCycleAhead(boolean isAhead) {
+        writerOneCycleAhead = isAhead;
+        headerBuffer.put(WRITER_ONE_CYCLE_AHEAD_INDEX, isAhead ? BYTE_TRUE : BYTE_FALSE);
     }
 
     @Override

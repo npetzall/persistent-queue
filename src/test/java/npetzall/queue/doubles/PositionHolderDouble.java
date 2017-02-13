@@ -2,12 +2,12 @@ package npetzall.queue.doubles;
 
 import npetzall.queue.api.PositionHolder;
 
-import java.util.Arrays;
-
 public class PositionHolderDouble implements PositionHolder {
 
     private volatile int writePosition;
     private volatile int readPosition;
+
+    private volatile boolean writerOneCycleAhead = false;
 
     public PositionHolderDouble() {
         this(0,0);
@@ -36,5 +36,15 @@ public class PositionHolderDouble implements PositionHolder {
     @Override
     public void readPosition(int readPosition) {
         this.readPosition = readPosition;
+    }
+
+    @Override
+    public boolean writerOneCycleAhead() {
+        return writerOneCycleAhead;
+    }
+
+    @Override
+    public void writerOneCycleAhead(boolean isAhead) {
+        writerOneCycleAhead = isAhead;
     }
 }
