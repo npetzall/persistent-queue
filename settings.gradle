@@ -1,0 +1,4 @@
+rootProject.name = 'persistent-queue'
+include 'core'
+include 'bytearray-queue'
+include 'object-queue'

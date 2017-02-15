@@ -1,54 +1,6 @@
-plugins {
-    id "org.sonarqube" version "2.2.1"
-    id "io.morethan.jmhreport" version "0.1.0"
-    id "me.champeau.gradle.jmh" version "0.3.1"
+allprojects {
+    apply plugin: 'idea'
 }
-
-repositories {
-    jcenter()
-}
-
-apply plugin: 'java'
-apply plugin: 'groovy'
-apply plugin: 'jacoco'
-apply plugin: 'idea'
-
-[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
-compileJava.options.compilerArgs << "-Xlint:all"
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-dependencies {
-    testCompile 'org.assertj:assertj-core:3.6.0'
-    testCompile "org.spockframework:spock-core:$spockVersion"
-    testCompile 'cglib:cglib-nodep:3.2.4'
-    testCompile 'org.objenesis:objenesis:2.4'
-    testCompile( 'com.athaydes:spock-reports:1.2.13' ) {
-        transitive = false // this avoids affecting your version of Groovy/Spock
-    }
-    // if you don't already have slf4j-api and an implementation of it in the classpath, add this!
-    testCompile 'org.slf4j:slf4j-api:1.7.13'
-    testCompile 'org.slf4j:slf4j-simple:1.7.13'
-}
-
-jmh {
-    resultFormat = 'JSON'
-    jmhVersion = '1.17.4'
-    jvmArgs = '-Xms2g -Xmx2g'
-}
-
-jmhReport {
-    jmhResultPath = project.file('build/reports/jmh/results.json')
-    jmhReportOutput = project.file('build/reports/jmh')
-}
-tasks.jmh.finalizedBy tasks.jmhReport
-
-jacoco {
-    toolVersion = "0.7.8"
-}
-
-jacocoTestReport.dependsOn test
 
 task wrapper(type: Wrapper) {
     gradleVersion = '3.3'
