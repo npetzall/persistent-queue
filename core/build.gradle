@@ -35,6 +35,7 @@ jmh {
     resultFormat = 'JSON'
     jmhVersion = '1.17.4'
     jvmArgs = '-Xms2g -Xmx2g'
+    failOnError = true
 }
 
 jmhReport {

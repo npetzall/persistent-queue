@@ -12,8 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 @Fork(value = 2)
-@Warmup(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-@Measurement(iterations = 20, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@Warmup(iterations = 10, time = 50, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 20, time = 50, timeUnit = TimeUnit.MILLISECONDS)
 @BenchmarkMode({Mode.Throughput, Mode.SampleTime})
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class ByteBufferWriteBenchmark {
@@ -84,17 +84,17 @@ public class ByteBufferWriteBenchmark {
     }
 
     @Benchmark
-    public ByteBuffer onHeap(Data data, OnHeapByteBuffer byteBuffer) {
+    public ByteBuffer OnHeap(Data data, OnHeapByteBuffer byteBuffer) {
         return byteBuffer.byteBuffer.putInt(data.data.length).put(data.data);
     }
 
     @Benchmark
-    public ByteBuffer offHeap(Data data, OffHeapByteBuffer byteBuffer) {
+    public ByteBuffer OffHeap(Data data, OffHeapByteBuffer byteBuffer) {
         return byteBuffer.byteBuffer.putInt(data.data.length).put(data.data);
     }
 
     @Benchmark
-    public ByteBuffer memoryMappedFile(Data data, MemoryMappedFile byteBuffer) {
+    public ByteBuffer MemoryMappedFile(Data data, MemoryMappedFile byteBuffer) {
         return byteBuffer.byteBuffer.putInt(data.data.length).put(data.data);
     }
 }

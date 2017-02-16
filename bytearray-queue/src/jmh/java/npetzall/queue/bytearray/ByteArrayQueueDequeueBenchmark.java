@@ -13,8 +13,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 @Fork(value = 2)
-@Warmup(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-@Measurement(iterations = 20, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@Warmup(iterations = 10, time = 50, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 20, time = 50, timeUnit = TimeUnit.MILLISECONDS)
 @BenchmarkMode({Mode.Throughput, Mode.SampleTime})
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class ByteArrayQueueDequeueBenchmark {
@@ -34,8 +34,9 @@ public class ByteArrayQueueDequeueBenchmark {
 
         public OnHeapQueue() {
             Data data = new Data();
-            while (queue.getAvailableSpace() > data.data.length) {
-                queue.enqueue(data.data);
+            boolean enqueued = queue.enqueue(data.data);
+            while (enqueued) {
+                enqueued = queue.enqueue(data.data);
             }
         }
 
@@ -54,8 +55,9 @@ public class ByteArrayQueueDequeueBenchmark {
 
         public OffHeapQueue() {
             Data data = new Data();
-            while (queue.getAvailableSpace() > data.data.length) {
-                queue.enqueue(data.data);
+            boolean enqueued = queue.enqueue(data.data);
+            while (enqueued) {
+                enqueued = queue.enqueue(data.data);
             }
         }
 
@@ -82,8 +84,9 @@ public class ByteArrayQueueDequeueBenchmark {
                 e.printStackTrace();
             }
             Data data = new Data();
-            while (queue.getAvailableSpace() > data.data.length) {
-                queue.enqueue(data.data);
+            boolean enqueued = queue.enqueue(data.data);
+            while (enqueued) {
+                enqueued = queue.enqueue(data.data);
             }
 
         }
@@ -103,19 +106,19 @@ public class ByteArrayQueueDequeueBenchmark {
     }
 
     @Benchmark
-    public byte[] onHeapQueue(OnHeapQueue queue) {
+    public byte[] OnHeapQueue(OnHeapQueue queue) {
         byte[] data = queue.queue.deque();
         if (data.length == 0) {
-            throw new RuntimeException("Wrong");
+            throw new RuntimeException("Wrong [r: " + queue.queue.readBuffer.position() + ", w: " + queue.queue.writeBuffer.position());
         }
         return queue.queue.deque();
     }
 
     @Benchmark
-    public byte[] offHeapQueue(OffHeapQueue queue) {
+    public byte[] OffHeapQueue(OffHeapQueue queue) {
         byte[] data = queue.queue.deque();
         if (data.length == 0) {
-            throw new RuntimeException("Wrong");
+            throw new RuntimeException("Wrong [r: " + queue.queue.readBuffer.position() + ", w: " + queue.queue.writeBuffer.position());
         }
         return queue.queue.deque();
     }
@@ -124,7 +127,7 @@ public class ByteArrayQueueDequeueBenchmark {
     public byte[] MemoryMappedQueue(MemoryMappedQueue queue) {
         byte[] data = queue.queue.deque();
         if (data.length == 0) {
-            throw new RuntimeException("Wrong");
+            throw new RuntimeException("Wrong [r: " + queue.queue.readBuffer.position() + ", w: " + queue.queue.writeBuffer.position());
         }
         return queue.queue.deque();
     }

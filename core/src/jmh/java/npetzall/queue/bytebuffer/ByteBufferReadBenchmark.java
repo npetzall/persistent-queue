@@ -13,8 +13,8 @@ import java.util.concurrent.TimeUnit;
 
 
 @Fork(value = 2)
-@Warmup(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-@Measurement(iterations = 20, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@Warmup(iterations = 10, time = 50, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 20, time = 50, timeUnit = TimeUnit.MILLISECONDS)
 @BenchmarkMode({Mode.Throughput, Mode.SampleTime})
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class ByteBufferReadBenchmark {
@@ -100,7 +100,7 @@ public class ByteBufferReadBenchmark {
 
         @TearDown(Level.Iteration)
         public void tearDownIt() {
-            byteBuffer.clear();
+            byteBuffer.position(0);
         }
 
         @TearDown(Level.Trial)
@@ -116,7 +116,7 @@ public class ByteBufferReadBenchmark {
     }
 
     @Benchmark
-    public byte[] onHeap(OnHeapByteBuffer byteBuffer) {
+    public byte[] OnHeap(OnHeapByteBuffer byteBuffer) {
         int length = byteBuffer.byteBuffer.getInt();
         byte[] data = new byte[length];
         byteBuffer.byteBuffer.get(data);
@@ -124,7 +124,7 @@ public class ByteBufferReadBenchmark {
     }
 
     @Benchmark
-    public byte[] offHeap(OffHeapByteBuffer byteBuffer) {
+    public byte[] OffHeap(OffHeapByteBuffer byteBuffer) {
         int length = byteBuffer.byteBuffer.getInt();
         byte[] data = new byte[length];
         byteBuffer.byteBuffer.get(data);
@@ -132,7 +132,7 @@ public class ByteBufferReadBenchmark {
     }
 
     @Benchmark
-    public byte[] memoryMappedFile(MemoryMappedFile byteBuffer) {
+    public byte[] MemoryMappedFile(MemoryMappedFile byteBuffer) {
         int length = byteBuffer.byteBuffer.getInt();
         byte[] data = new byte[length];
         byteBuffer.byteBuffer.get(data);

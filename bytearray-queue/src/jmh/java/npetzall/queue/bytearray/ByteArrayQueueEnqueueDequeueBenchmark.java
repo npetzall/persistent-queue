@@ -80,13 +80,13 @@ public class ByteArrayQueueEnqueueDequeueBenchmark {
     }
 
     @Benchmark
-    public void onHeapByteBufferQueue(Data data, OnHeapQueue queue, Blackhole blackhole) {
+    public void OnHeapByteBufferQueue(Data data, OnHeapQueue queue, Blackhole blackhole) {
         blackhole.consume(queue.queue.enqueue(data.data));
         blackhole.consume(queue.queue.deque());
     }
 
     @Benchmark
-    public void offHeapByteBufferQueue(Data data, OffHeapQueue queue, Blackhole blackhole) {
+    public void OffHeapByteBufferQueue(Data data, OffHeapQueue queue, Blackhole blackhole) {
         blackhole.consume(queue.queue.enqueue(data.data));
         blackhole.consume(queue.queue.deque());
     }

@@ -13,8 +13,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 @Fork(value = 2)
-@Warmup(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-@Measurement(iterations = 20, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@Warmup(iterations = 10, time = 50, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 20, time = 50, timeUnit = TimeUnit.MILLISECONDS)
 @BenchmarkMode({Mode.Throughput, Mode.SampleTime})
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class ByteArrayQueueEnqueueBenchmark {
@@ -75,7 +75,7 @@ public class ByteArrayQueueEnqueueBenchmark {
     }
 
     @Benchmark
-    public boolean onHeapQueue(Data data, OnHeapQueue queue) {
+    public boolean OnHeapQueue(Data data, OnHeapQueue queue) {
         boolean enqueued = queue.queue.enqueue(data.data);
         if (!enqueued) {
             throw new RuntimeException("Wrong");
@@ -84,7 +84,7 @@ public class ByteArrayQueueEnqueueBenchmark {
     }
 
     @Benchmark
-    public boolean offHeapQueue(Data data, OffHeapQueue queue) {
+    public boolean OffHeapQueue(Data data, OffHeapQueue queue) {
         boolean enqueued = queue.queue.enqueue(data.data);
         if (!enqueued) {
             throw new RuntimeException("Wrong");
